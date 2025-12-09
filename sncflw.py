@@ -1,5 +1,6 @@
 import os
-
+import time
+import webbrowser
 
 import funcs.dtip
 import funcs.iplp
@@ -14,6 +15,9 @@ def menu():
         print("[3] traceroute (tracert)")
         print("[4] wrapper nmap")
         print("[5] whois lookup")
+        print("")
+        print("[0] exit")
+        print("[99] my github")
         que = input("select option: ")
         if que == "1":
             print("\033[H\033[J", end="")           
@@ -35,6 +39,13 @@ def menu():
             print("\033[H\033[J", end="")           
             funcs.whois.wip()
             break
-        
+        elif que == "0":
+            print("byeeeeeeee")
+            time.sleep(1)
+            break
+        elif que == "99":
+            print("give a star for the repo")
+            webbrowser.open_new("github.com/s1z1-balance/ScanFlow")
+            menu()
 if __name__ == "__main__":
     menu()
