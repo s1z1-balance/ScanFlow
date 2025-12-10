@@ -1,11 +1,17 @@
-import dns.resolver
 import json
-
 from rich import print as rprint
 from rich.json import JSON
 
-resolver = dns.resolver.Resolver()
-resolver.nameservers = ['8.8.8.8', '1.1.1.1']
+_resolver = None
+
+def get_resolver():
+    global _resolver
+    if _resolver is None:
+        import dns.resolver
+        _resolver = dns.resolver.Resolver()
+        _resolver.nameservers = ['8.8.8.8', '1.1.1.1']
+        _resolver.cache = dns.resolver.Cache()
+    return _resolver
 
 ALL_TYPES = [
     'A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', 'PTR', 'SRV',
@@ -14,7 +20,10 @@ ALL_TYPES = [
 ]
 
 def get_records(domain):
+    import dns.resolver
+    resolver = get_resolver()
     result = {"domain": domain, "records": {}}
+    
     for t in ALL_TYPES:
         try:
             answers = resolver.resolve(domain, t)

@@ -1,10 +1,10 @@
-import requests
 import json
 
-from rich import print as rprint
-from rich.json import JSON
-
 def ip_lookup():
+    import requests
+    from rich import print as rprint
+    from rich.json import JSON
+    
     from sncflw import menu   
 
     while True:
