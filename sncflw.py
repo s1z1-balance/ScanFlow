@@ -7,6 +7,7 @@ import funcs.iplp
 import funcs.tracert
 import funcs.wnmap
 import funcs.whois
+import funcs.ctls
 
 def menu():
     while True:
@@ -15,6 +16,7 @@ def menu():
         print("[3] traceroute (tracert)")
         print("[4] wrapper nmap")
         print("[5] whois lookup")
+        print("[6] SSL/TLS certificate checker")
         print("")
         print("[0] exit")
         print("[99] my github")
@@ -38,6 +40,10 @@ def menu():
         elif que == "5":
             print("\033[H\033[J", end="")           
             funcs.whois.wip()
+            break
+        elif que == "6":
+            print("\033[H\033[J", end="")           
+            funcs.ctls.ctls()
             break
         elif que == "0":
             print("byeeeeeeee")
