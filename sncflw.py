@@ -5,18 +5,17 @@ import webbrowser
 def menu():
     while True:
         print("\033[H\033[J", end="")
-        print("[1] domain to ip (A, AAAA and etc.)")
-        print("[2] ip lookup")
-        print("[3] traceroute (tracert)")
-        print("[4] wrapper nmap")
-        print("[5] whois lookup")
-        print("[6] SSL/TLS certificate checker")
+        print("[1] domain to ip (A, AAAA and etc.)    /    [2] ip lookup")
+        print("[3] traceroute (tracert)    /    [4] wrapper nmap")
+        print("[5] whois lookup    /    [6] SSL/TLS certificate checker")
         print("")
         print("[0] exit")
         print("[99] my github")
         que = input("select option: ")
         
         if que == "1":
+            print("\033[H\033[J", end="")
+            from funcs import dtip
             print("\033[H\033[J", end="")
             from funcs import dtip
             dtip.dtip()
@@ -48,9 +47,7 @@ def menu():
             break
         elif que == "0":
             print("byeeeeeeee")
-            time.sleep(1)
-            print("\033[H\033[J", end="")
-            return
+            os._exit(0)
         elif que == "99":
             print("give a star for the repo")
             webbrowser.open_new("github.com/s1z1-balance/ScanFlow")
