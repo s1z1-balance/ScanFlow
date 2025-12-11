@@ -19,7 +19,7 @@ def choose_options():
             custom_opts = input("enter custom nmap options: ").strip()
             return custom_opts.split()
         elif choice == "5":
-            return ["--script", "vuln"]
+            return ["-sC", "-sV", "--script", "vuln"]
         else:
             print("invalid choice, try again.")
 

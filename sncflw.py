@@ -2,15 +2,9 @@ import os
 import time
 import webbrowser
 
-import funcs.dtip
-import funcs.iplp
-import funcs.tracert
-import funcs.wnmap
-import funcs.whois
-import funcs.ctls
-
 def menu():
     while True:
+        print("\033[H\033[J", end="")
         print("[1] domain to ip (A, AAAA and etc.)")
         print("[2] ip lookup")
         print("[3] traceroute (tracert)")
@@ -21,37 +15,46 @@ def menu():
         print("[0] exit")
         print("[99] my github")
         que = input("select option: ")
+        
         if que == "1":
-            print("\033[H\033[J", end="")           
-            funcs.dtip.dtip()
+            print("\033[H\033[J", end="")
+            from funcs import dtip
+            dtip.dtip()
             break
         elif que == "2":
-            print("\033[H\033[J", end="")           
-            funcs.iplp.ip_lookup()
+            print("\033[H\033[J", end="")
+            from funcs import iplp
+            iplp.ip_lookup()
             break
         elif que == "3":
-            print("\033[H\033[J", end="")           
-            funcs.tracert.tracert()
+            print("\033[H\033[J", end="")
+            from funcs import tracert
+            tracert.tracert()
             break
         elif que == "4":
-            print("\033[H\033[J", end="")           
-            funcs.wnmap.wnmap()
+            print("\033[H\033[J", end="")
+            from funcs import wnmap
+            wnmap.wnmap()
             break
         elif que == "5":
-            print("\033[H\033[J", end="")           
-            funcs.whois.wip()
+            print("\033[H\033[J", end="")
+            from funcs import whois
+            whois.wip()
             break
         elif que == "6":
-            print("\033[H\033[J", end="")           
-            funcs.ctls.ctls()
+            print("\033[H\033[J", end="")
+            from funcs import ctls
+            ctls.ctls()
             break
         elif que == "0":
             print("byeeeeeeee")
             time.sleep(1)
-            break
+            print("\033[H\033[J", end="")
+            return
         elif que == "99":
             print("give a star for the repo")
             webbrowser.open_new("github.com/s1z1-balance/ScanFlow")
             menu()
+
 if __name__ == "__main__":
     menu()
