@@ -5,6 +5,9 @@ def choose_options():
         print("[1] standard scan (-sC -sV) / 60~ secs")
         print("[2] quick scan (-T4 -F) / 5~ secs")
         print("[3] full port scan (-p-) 20~ mins")
+        print("[4] custom options")
+        print("")
+        print("[5] scan CVE's")
         choice = input("choose scan type: ").strip()
         if choice == "1":
             return ["-sC", "-sV"]
@@ -12,10 +15,16 @@ def choose_options():
             return ["-T4", "-F"]
         elif choice == "3":
             return ["-p-"]
+        elif choice == "4":
+            custom_opts = input("enter custom nmap options: ").strip()
+            return custom_opts.split()
+        elif choice == "5":
+            return ["--script", "vuln"]
         else:
             print("invalid choice, try again.")
 
 def wnmap():
+    from sncflw import menu
     target = input("enter ip/domain: ").strip()
     if not target:
         print("no target.")
@@ -37,6 +46,13 @@ def wnmap():
             print(result.stderr)
     except Exception as e:
         print(f"error: {e}")
+        
+    back = input("\nback to menu? (y/n): ").lower()
+    if back == "y":
+        print("\033[H\033[J", end="")
+        menu()
+    elif back == "n":
+            return
 
 if __name__ == "__main__":
     wnmap()
