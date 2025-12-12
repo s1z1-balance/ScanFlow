@@ -1,8 +1,16 @@
 import os
-import time
 import webbrowser
 
 def menu():
+    options = {
+        "1": ("funcs.dtip", "dtip"),
+        "2": ("funcs.iplp", "ip_lookup"),
+        "3": ("funcs.tracert", "tracert"),
+        "4": ("funcs.wnmap", "wnmap"),
+        "5": ("funcs.whois", "wip"),
+        "6": ("funcs.ctls", "ctls"),
+    }
+    
     while True:
         print("\033[H\033[J", end="")
         print("[1] domain to ip (A, AAAA and etc.)    /    [2] ip lookup")
@@ -11,39 +19,14 @@ def menu():
         print("")
         print("[0] exit")
         print("[99] my github")
+        
         que = input("select option: ")
         
-        if que == "1":
+        if que in options:
             print("\033[H\033[J", end="")
-            from funcs import dtip
-            print("\033[H\033[J", end="")
-            from funcs import dtip
-            dtip.dtip()
-            break
-        elif que == "2":
-            print("\033[H\033[J", end="")
-            from funcs import iplp
-            iplp.ip_lookup()
-            break
-        elif que == "3":
-            print("\033[H\033[J", end="")
-            from funcs import tracert
-            tracert.tracert()
-            break
-        elif que == "4":
-            print("\033[H\033[J", end="")
-            from funcs import wnmap
-            wnmap.wnmap()
-            break
-        elif que == "5":
-            print("\033[H\033[J", end="")
-            from funcs import whois
-            whois.wip()
-            break
-        elif que == "6":
-            print("\033[H\033[J", end="")
-            from funcs import ctls
-            ctls.ctls()
+            module_name, func_name = options[que]
+            module = __import__(module_name, fromlist=[func_name])
+            getattr(module, func_name)()
             break
         elif que == "0":
             print("byeeeeeeee")
