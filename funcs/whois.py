@@ -26,10 +26,10 @@ def whois(domain):
             data += chunk
         s.close()
         raw = data.decode('utf-8', errors='ignore')
-        print(f"\nDomain: {domain}\n")
+        print(f"\ndomain: {domain}\n")
         print(raw)
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"err: {e}")
 
 def wip():
     from sncflw import menu
