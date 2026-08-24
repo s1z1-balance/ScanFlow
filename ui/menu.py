@@ -1,13 +1,9 @@
 import sys
 import webbrowser
-from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
-from rich.align import Align
-
 from ui.theme import RED_PALETTE
 from ui.banner import get_header_panel
-from ui.components import console, clear_screen, print_error
+from ui.components import console, clear_screen, print_error, ReturnToMenu
 
 MODULES = [
     {
@@ -123,7 +119,11 @@ def start_tui():
     while True:
         render_main_menu()
         prompt_str = f"[bold {RED_PALETTE['primary']}]scanflow[/bold {RED_PALETTE['primary']}][dim]@[/dim][bold {RED_PALETTE['accent']}]core[/bold {RED_PALETTE['accent']}] [bold white]#[/bold white] "
-        choice = console.input(prompt_str).strip()
+        try:
+            choice = console.input(prompt_str).strip()
+        except (KeyboardInterrupt, EOFError):
+            console.print(f"\n[{RED_PALETTE['primary']}][*] Terminating ScanFlow session. Goodbye![/]")
+            sys.exit(0)
 
         if choice in ("0", "00", "exit", "quit", "q"):
             console.print(f"\n[{RED_PALETTE['primary']}][*] Terminating ScanFlow session. Goodbye![/]")
@@ -138,6 +138,9 @@ def start_tui():
                 module = __import__(module_name, fromlist=[func_name])
                 func = getattr(module, func_name)
                 func()
+            except ReturnToMenu:
+                # Immediate clean jump directly back to main menu
+                continue
             except Exception as e:
                 print_error(f"Execution failure in {func_name}: {e}")
                 console.input("\n[dim]Press Enter to return to menu...[/dim]")

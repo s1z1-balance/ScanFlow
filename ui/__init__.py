@@ -12,6 +12,7 @@ from ui.components import (
     ask_back,
     press_enter,
     create_table,
+    ReturnToMenu,
 )
 from ui.menu import start_tui, render_main_menu
 
@@ -31,6 +32,7 @@ __all__ = [
     "ask_back",
     "press_enter",
     "create_table",
+    "ReturnToMenu",
     "start_tui",
     "render_main_menu",
 ]

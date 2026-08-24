@@ -1,6 +1,4 @@
-import sys
 from rich.text import Text
-from rich.panel import Panel
 from rich.align import Align
 from ui.theme import RED_PALETTE
 
@@ -27,7 +25,6 @@ def get_header_panel():
     banner = get_banner_renderable()
     subtitle = Text.from_markup(
         f"[{RED_PALETTE['accent']}]v2.0[/]  [dim]|[/]  "
-        f"[{RED_PALETTE['text']}]OFFENSIVE & DEFENSIVE RECONNAISSANCE TOOLKIT[/]  [dim]|[/]  "
-        f"[{RED_PALETTE['primary']}]PURE ASYNC CORE[/]"
+        f"[{RED_PALETTE['text']}]OFFENSIVE & DEFENSIVE RECONNAISSANCE TOOLKIT[/]"
     )
     return banner, Align.center(subtitle)
