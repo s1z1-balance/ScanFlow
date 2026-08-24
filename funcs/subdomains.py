@@ -2,9 +2,8 @@ import asyncio
 import socket
 import re
 import requests
-from rich import print as rprint
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
+from ui import console, print_header, print_error, print_success, print_info, print_warning, ask_input, ask_back, create_table, RED_PALETTE
 
 COMMON_SUBDOMAINS = [
     "www", "mail", "remote", "blog", "webmail", "server", "ns1", "ns2", "smtp",
@@ -92,7 +91,7 @@ def find_subdomains(domain, include_bruteforce=True):
     domain = clean_domain(domain)
     found = {}
 
-    print(f"searching passive OSINT sources for '{domain}'...")
+    print_info(f"Querying OSINT sources for [bold white]{domain}[/bold white]...")
 
     otx_results = fetch_otx(domain)
     for s in otx_results:
@@ -113,7 +112,7 @@ def find_subdomains(domain, include_bruteforce=True):
                 found.setdefault(sub, set()).add("Wordlist")
 
     all_subs = sorted(list(found.keys()))
-    print(f"checking DNS resolution for {len(all_subs)} candidate subdomains...")
+    print_info(f"Verifying DNS resolution for [bold white]{len(all_subs)}[/bold white] candidate subdomains...")
     
     resolved = asyncio.run(resolve_all(all_subs))
 
@@ -132,7 +131,8 @@ def find_subdomains(domain, include_bruteforce=True):
 
 def subdomains():
     while True:
-        target = input("enter domain (e.g. example.com) (or empty to return): ").strip()
+        print_header("Subdomain Enumeration", category="RECONNAISSANCE")
+        target = ask_input("Enter domain (e.g. example.com)")
         if not target:
             return
 
@@ -140,11 +140,13 @@ def subdomains():
         if not domain:
             continue
 
-        print(f"\n[1] fast search (passive OSINT + top active check)")
-        print(f"[2] deep search (passive OSINT + full wordlist bruteforce)")
-        print(f"[0] back")
-        
-        mode = input("choose mode: ").strip()
+        console.print()
+        console.print(f"  [{RED_PALETTE['tag']}][1][/{RED_PALETTE['tag']}] Fast Search (Passive OSINT sources)")
+        console.print(f"  [{RED_PALETTE['tag']}][2][/{RED_PALETTE['tag']}] Deep Search (Passive OSINT + Wordlist Brute-force)")
+        console.print(f"  [{RED_PALETTE['tag']}][0][/{RED_PALETTE['tag']}] Back to menu")
+        console.print()
+
+        mode = ask_input("Choose mode", default="1")
         if mode == "1":
             include_bf = False
         elif mode == "2":
@@ -152,16 +154,21 @@ def subdomains():
         elif mode == "0":
             return
         else:
-            include_bf = True
+            include_bf = False
 
-        print(f"\nstarting subdomain discovery for {domain}...\n")
+        console.print()
         results = find_subdomains(domain, include_bruteforce=include_bf)
+        console.print()
 
         if results:
-            table = Table(title=f"Discovered Active Subdomains for {domain}", show_header=True, header_style="bold cyan")
-            table.add_column("SUBDOMAIN", style="bold green", width=35)
-            table.add_column("IP ADDRESS(ES)", style="yellow", width=25)
-            table.add_column("SOURCE", style="white", width=25)
+            table = create_table(
+                title=f"Discovered Active Subdomains for {domain}",
+                columns=[
+                    ("SUBDOMAIN", {"style": f"bold {RED_PALETTE['primary']}", "width": 38}),
+                    ("IP ADDRESS(ES)", {"style": "bold yellow", "width": 26}),
+                    ("SOURCE(S)", {"style": "white", "width": 24}),
+                ]
+            )
 
             for r in results:
                 table.add_row(
@@ -169,13 +176,13 @@ def subdomains():
                     ", ".join(r["ips"]),
                     r["source"]
                 )
-            rprint(table)
-            print(f"\ntotal active subdomains found: {len(results)}\n")
+            console.print(table)
+            console.print()
+            print_success(f"Discovered [bold {RED_PALETTE['primary']}]{len(results)}[/] active subdomains.")
         else:
-            print("no active subdomains discovered.")
+            print_warning("No active subdomains discovered for this domain.")
 
-        back = input("search another domain? (y/n): ").lower().strip()
-        if back != "y":
+        if not ask_back("another domain"):
             return
 
 if __name__ == "__main__":

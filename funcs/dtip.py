@@ -1,6 +1,6 @@
 import json
-from rich import print as rprint
 from rich.json import JSON
+from ui import console, print_header, print_error, print_success, print_info, ask_input, ask_back, create_table, RED_PALETTE
 
 _resolver = None
 
@@ -63,14 +63,35 @@ def get_records(domain):
 
 def dtip():
     while True:
-        domain = input("enter domain (or empty to return): ").strip()
+        print_header("DNS Records Extractor", category="DNS & DOMAIN")
+        domain = ask_input("Enter domain (e.g. example.com)")
         if not domain:
             return
-        data = get_records(domain)
-        rprint(JSON(json.dumps(data, ensure_ascii=False)))
 
-        back = input("\ncheck another domain? (y/n): ").lower().strip()
-        if back != "y":
+        print_info(f"Querying DNS records for [bold white]{domain}[/bold white]...")
+        data = get_records(domain)
+        console.print()
+        
+        found_records = {k: v for k, v in data["records"].items() if v is not None}
+        if found_records:
+            table = create_table(
+                title=f"DNS Records for {domain}",
+                columns=[
+                    ("TYPE", {"style": f"bold {RED_PALETTE['primary']}", "width": 12}),
+                    ("ENTRIES", {"style": "white"}),
+                ]
+            )
+            for rtype, rvalues in found_records.items():
+                if isinstance(rvalues, list):
+                    val_str = "\n".join(json.dumps(item, ensure_ascii=False) if isinstance(item, dict) else str(item) for item in rvalues)
+                else:
+                    val_str = str(rvalues)
+                table.add_row(rtype, val_str)
+            console.print(table)
+        else:
+            print_error(f"No DNS records retrieved for {domain}")
+
+        if not ask_back("another domain"):
             return
 
 if __name__ == "__main__":

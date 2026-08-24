@@ -2,9 +2,8 @@ import asyncio
 import socket
 import time
 import re
-from rich import print as rprint
-from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
+from ui import console, print_header, print_error, print_success, print_info, ask_input, ask_back, create_table, RED_PALETTE
 
 COMMON_SERVICES = {
     20: "FTP-Data", 21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP", 43: "WHOIS",
@@ -44,17 +43,6 @@ def get_top_1000_ports():
     ports = set(TOP_100_PORTS)
     ports.update(range(1, 1025))
     ports.update(COMMON_SERVICES.keys())
-    extra_common = [
-        1025, 1026, 1027, 1028, 1029, 1030, 1080, 1111, 1234, 1433, 1521, 1720,
-        1723, 1812, 1813, 1900, 2000, 2001, 2049, 2121, 2222, 2375, 2376, 2483,
-        2484, 3000, 3128, 3268, 3269, 3306, 3389, 3690, 4000, 4369, 4443, 4444,
-        4567, 4840, 5000, 5001, 5060, 5061, 5432, 5671, 5672, 5900, 5901, 5984,
-        5985, 5986, 6000, 6001, 6379, 6666, 6667, 7000, 7001, 7077, 7443, 7777,
-        8000, 8001, 8008, 8080, 8081, 8082, 8088, 8090, 8443, 8888, 9000, 9001,
-        9042, 9090, 9091, 9092, 9100, 9200, 9300, 9418, 9999, 10000, 11211,
-        15672, 27017, 27018, 28017, 50000, 50070
-    ]
-    ports.update(extra_common)
     return sorted(list(ports))[:1000]
 
 async def grab_banner(host, port, timeout=1.0):
@@ -153,14 +141,15 @@ async def run_scan(target_ip, ports, concurrency=500, timeout=0.8):
     open_ports = []
     
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        TextColumn("({task.completed}/{task.total} ports)"),
+        SpinnerColumn(style=f"bold {RED_PALETTE['primary']}"),
+        TextColumn(f"[bold {RED_PALETTE['accent']}]{{task.description}}[/bold {RED_PALETTE['accent']}]"),
+        BarColumn(bar_width=40, style="dim #5a000e", complete_style=f"bold {RED_PALETTE['primary']}"),
+        TextColumn(f"[bold {RED_PALETTE['text']}]{{task.percentage:>3.0f}}%[/bold {RED_PALETTE['text']}]"),
+        TextColumn("({task.completed}/{task.total})"),
         TimeElapsedColumn(),
+        console=console
     ) as progress:
-        task = progress.add_task(f"scanning {target_ip}...", total=len(ports))
+        task = progress.add_task(f"Scanning {target_ip}...", total=len(ports))
         
         async def worker(p):
             res = await check_port(target_ip, p, semaphore, timeout)
@@ -178,28 +167,33 @@ async def run_scan(target_ip, ports, concurrency=500, timeout=0.8):
 def resolve_target(target):
     try:
         return socket.gethostbyname(target)
-    except Exception as e:
+    except Exception:
         return None
 
 def pscan():
     while True:
-        target = input("enter domain or ip (or empty to return): ").strip()
+        print_header("Async TCP Port Scanner", category="PORT SCANNER")
+        target = ask_input("Enter target domain/IP (empty to exit)")
         if not target:
             return
 
         target_ip = resolve_target(target)
         if not target_ip:
-            print(f"error: could not resolve host '{target}'")
+            print_error(f"Could not resolve host '{target}'")
+            if not ask_back("another target"):
+                return
             continue
 
-        print(f"\ntarget: {target} ({target_ip})\n")
-        print("[1] quick scan (top 100 ports) ~ 1-2s")
-        print("[2] standard scan (top 1000 ports) ~ 3-5s")
-        print("[3] full scan (all 1-65535 ports) ~ 20-30s")
-        print("[4] custom ports (e.g. 80,443,8000-8080)")
-        print("[0] back")
+        print_info(f"Target: [bold white]{target}[/bold white] -> [bold {RED_PALETTE['primary']}]{target_ip}[/]")
+        console.print()
+        console.print(f"  [{RED_PALETTE['tag']}][1][/{RED_PALETTE['tag']}] Quick Scan    (Top 100 ports)   ~ 1-2s")
+        console.print(f"  [{RED_PALETTE['tag']}][2][/{RED_PALETTE['tag']}] Standard Scan (Top 1000 ports)  ~ 3-5s")
+        console.print(f"  [{RED_PALETTE['tag']}][3][/{RED_PALETTE['tag']}] Full Scan     (All 1-65535)     ~ 20-30s")
+        console.print(f"  [{RED_PALETTE['tag']}][4][/{RED_PALETTE['tag']}] Custom Ports  (e.g. 80,443,8000-8080)")
+        console.print(f"  [{RED_PALETTE['tag']}][0][/{RED_PALETTE['tag']}] Back to menu")
+        console.print()
 
-        choice = input("\nchoose scan mode: ").strip()
+        choice = ask_input("Choose scan mode", default="1")
         if choice == "1":
             ports = TOP_100_PORTS
         elif choice == "2":
@@ -207,36 +201,43 @@ def pscan():
         elif choice == "3":
             ports = list(range(1, 65536))
         elif choice == "4":
-            raw_ports = input("enter ports (comma/range separated, e.g. 22,80,443,8000-8080): ").strip()
+            raw_ports = ask_input("Enter ports (e.g. 22,80,443,8000-8080)")
             ports = parse_custom_ports(raw_ports)
             if not ports:
-                print("no valid ports specified.")
+                print_error("No valid ports specified.")
                 continue
         elif choice == "0":
             return
         else:
-            print("invalid choice.")
-            continue
+            ports = TOP_100_PORTS
 
-        print(f"\nstarting async port scan on {len(ports)} ports...")
+        console.print()
+        print_info(f"Initiating async scan on [bold white]{len(ports)}[/bold white] ports...")
+        console.print()
         t_start = time.time()
         
         try:
             open_results = asyncio.run(run_scan(target_ip, ports, concurrency=500, timeout=0.8))
         except Exception as e:
-            print(f"scan failed: {e}")
+            print_error(f"Scan failed: {e}")
             continue
 
         duration = round(time.time() - t_start, 2)
-        print(f"\nscan completed in {duration}s. found {len(open_results)} open ports.\n")
+        console.print()
+        print_success(f"Scan finished in {duration}s. Found [bold {RED_PALETTE['primary']}]{len(open_results)}[/] open ports.")
+        console.print()
 
         if open_results:
-            table = Table(title=f"Open Ports for {target} ({target_ip})", show_header=True, header_style="bold cyan")
-            table.add_column("PORT", style="bold green", width=10)
-            table.add_column("STATE", width=8)
-            table.add_column("SERVICE", style="yellow", width=18)
-            table.add_column("BANNER / DETAILS", style="white", width=40)
-            table.add_column("LATENCY", style="magenta", width=10)
+            table = create_table(
+                title=f"Open Ports for {target} ({target_ip})",
+                columns=[
+                    ("PORT", {"style": f"bold {RED_PALETTE['primary']}", "width": 10}),
+                    ("STATE", {"style": "bold green", "width": 8}),
+                    ("SERVICE", {"style": "bold yellow", "width": 18}),
+                    ("BANNER / DETAILS", {"style": "white", "width": 40}),
+                    ("LATENCY", {"style": "magenta", "width": 10}),
+                ]
+            )
 
             for r in open_results:
                 table.add_row(
@@ -246,12 +247,11 @@ def pscan():
                     r["banner"] if r["banner"] else "-",
                     f"{r['rtt']} ms"
                 )
-            rprint(table)
+            console.print(table)
         else:
-            print("no open ports found.")
+            print_warning("No open ports discovered in target port range.")
 
-        back = input("\nscan another target? (y/n): ").lower().strip()
-        if back != "y":
+        if not ask_back("another scan"):
             return
 
 if __name__ == "__main__":
