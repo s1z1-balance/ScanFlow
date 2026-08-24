@@ -106,13 +106,10 @@ def fc(h, p=443, t=5):
     return r
 
 def ctls():
-    try:
-        from sncflw import menu
-    except:
-        menu = lambda: None
     while True:
-        i = input("host: ").strip()
-        if not i: continue
+        i = input("enter host (or empty to return): ").strip()
+        if not i:
+            return
         if ":" in i:
             h, ps = i.rsplit(":", 1)
             try: port = int(ps)
@@ -122,11 +119,8 @@ def ctls():
             port = 443
         d = fc(h, port)
         p(rj(json.dumps(d, ensure_ascii=False, indent=2)))
-        if input("\nback to menu? (y/n): ").lower().strip() == "y":
-            print("\033[H\033[J", end="")
-            menu()
-        else:
-            break
+        if input("\ncheck another host? (y/n): ").lower().strip() != "y":
+            return
 
 if __name__ == "__main__":
     ctls()

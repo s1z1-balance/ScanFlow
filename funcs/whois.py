@@ -32,16 +32,13 @@ def whois(domain):
         print(f"err: {e}")
 
 def wip():
-    from sncflw import menu
     while True:
-        domain = input("domain: ").strip()
-        if not domain: continue
+        domain = input("enter domain (or empty to return): ").strip()
+        if not domain:
+            return
         whois(domain)
-        back = input("\nback to menu? (y/n): ").lower()
-        if back == "y":
-            print("\033[H\033[J", end="")
-            menu()
-        elif back == "n":
+        back = input("\nlookup another domain? (y/n): ").lower().strip()
+        if back != "y":
             return
 
 if __name__ == "__main__":

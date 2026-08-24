@@ -62,19 +62,16 @@ def get_records(domain):
     return result
 
 def dtip():
-    from sncflw import menu   
-
     while True:
-        domain = input("domain: ").strip()
+        domain = input("enter domain (or empty to return): ").strip()
+        if not domain:
+            return
         data = get_records(domain)
         rprint(JSON(json.dumps(data, ensure_ascii=False)))
 
-        back = input("\nback to menu? (y/n): ").lower().strip()
-        if back == "y":
-            print("\033[H\033[J", end="")
-            menu()
-        else:
-            break
+        back = input("\ncheck another domain? (y/n): ").lower().strip()
+        if back != "y":
+            return
 
 if __name__ == "__main__":
     dtip()

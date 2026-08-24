@@ -24,34 +24,30 @@ def choose_options():
             print("invalid choice, try again.")
 
 def wnmap():
-    from sncflw import menu
-    target = input("enter ip/domain: ").strip()
-    if not target:
-        print("no target.")
-        return
-    
-    options = choose_options()
-
-    try:
-        print(f"scanning {target} with {' '.join(options)}...")
-        result = subprocess.run(
-            ["nmap"] + options + [target],
-            capture_output=True,
-            text=True,
-            timeout=1200
-        )
-        print(result.stdout)
-        if result.stderr:
-            print("nmap errors:")
-            print(result.stderr)
-    except Exception as e:
-        print(f"error: {e}")
+    while True:
+        target = input("enter ip/domain (or empty to return): ").strip()
+        if not target:
+            return
         
-    back = input("\nback to menu? (y/n): ").lower()
-    if back == "y":
-        print("\033[H\033[J", end="")
-        menu()
-    elif back == "n":
+        options = choose_options()
+
+        try:
+            print(f"scanning {target} with {' '.join(options)}...")
+            result = subprocess.run(
+                ["nmap"] + options + [target],
+                capture_output=True,
+                text=True,
+                timeout=1200
+            )
+            print(result.stdout)
+            if result.stderr:
+                print("nmap errors:")
+                print(result.stderr)
+        except Exception as e:
+            print(f"error: {e}")
+            
+        back = input("\nscan another target? (y/n): ").lower().strip()
+        if back != "y":
             return
 
 if __name__ == "__main__":

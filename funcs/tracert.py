@@ -55,16 +55,15 @@ def traceroute(target, max_hops=30):
 
 
 def tracert():
-    from sncflw import menu
-    target = input("enter domain or ip: ").strip().lower()
-    traceroute(target)
+    while True:
+        target = input("enter domain or ip (or empty to return): ").strip().lower()
+        if not target:
+            return
+        traceroute(target)
 
-    back = input("\nback to menu? (y/n): ").lower().strip()
-    if back == "y":
-        print("\033[H\033[J", end="")
-        menu()
-    else:
-        return
+        back = input("\ntrace another target? (y/n): ").lower().strip()
+        if back != "y":
+            return
 
 if __name__ == "__main__":
     tracert()
