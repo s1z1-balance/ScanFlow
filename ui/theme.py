@@ -1,6 +1,6 @@
 from rich.theme import Theme
 
-# Red / Crimson Cyberpunk Theme
+# Red / Crimson Theme Palette
 RED_PALETTE = {
     "primary": "#ff1e42",
     "primary_bold": "bold #ff1e42",
